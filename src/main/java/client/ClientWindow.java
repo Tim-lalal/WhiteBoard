@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ClientWindow extends JFrame {
 
-    private List<ShapeData> shapeDataList;
+//    private List<ShapeData> shapeDataList;
 
     private OutputStream output;
 
@@ -287,10 +287,10 @@ public class ClientWindow extends JFrame {
 
     }
 
-    public void updateShapeDataList(List<ShapeData> shapeDataList){
-        this.shapeDataList = shapeDataList;
-        repaint();
-    }
+//    public void updateShapeDataList(List<ShapeData> shapeDataList){
+//        this.shapeDataList = shapeDataList;
+//        repaint();
+//    }
 
 
 }

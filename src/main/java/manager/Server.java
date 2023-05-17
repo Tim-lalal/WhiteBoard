@@ -63,6 +63,8 @@ public class Server {
                 MessageChannel channel = new MessageChannel((sockets.size()), input, outputs, server );
                 System.out.println("Socket size: "+ sockets.size());
                 clientExecutorService.execute(channel);
+
+
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

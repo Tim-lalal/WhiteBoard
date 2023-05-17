@@ -61,6 +61,12 @@ public class ClientLoginWindow extends JFrame{
                     //get the client to server input and output streams
                     input = socket.getInputStream();
                     output = socket.getOutputStream();
+                    Message message = new Message("STRING",name);
+                    String messageJson = new Gson().toJson(message);
+                    output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+                    output.flush();
+                    dispose();
+                    clientWindow = new ClientWindow(name, shapeDataList, output);
                     MessageReceive messageReceive = new MessageReceive();
                     messageReceive.start();
 
@@ -68,8 +74,7 @@ public class ClientLoginWindow extends JFrame{
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
-                dispose();
-                clientWindow = new ClientWindow(name, shapeDataList, output);
+
             }
         });
 
@@ -82,24 +87,29 @@ public class ClientLoginWindow extends JFrame{
 
 
     class MessageReceive extends Thread{
-
         @Override
         public void run() {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
             try{
                 String line;
                 while ((line = reader.readLine()) != null){
-                    ShapeData shapeData = new Gson().fromJson(line, ShapeData.class);
-                    shapeDataList.add(shapeData);
-                    System.out.println("receive ShapeData from Server: " + shapeData);
-                    clientWindow.repaint();
+                    Message message = new Gson().fromJson(line, Message.class);
+                    if ("SHAPEDATA".equals(message.getType())) {
+                        ShapeData shapeData = new Gson().fromJson(message.getData(), ShapeData.class);
+                        shapeDataList.add(shapeData);
+                        System.out.println("receive ShapeData from Server: " + shapeData);
+                        clientWindow.repaint();
+                    }
+                    else if ("STRING".equals(message.getType())) {
+                        System.out.println("Received string: " + message.getData());
+                    }
                 }
             }catch (Exception e){
-                e.printStackTrace();
+                System.out.println("receive data from server failed!");
             }
-
         }
     }
+
 
 
 

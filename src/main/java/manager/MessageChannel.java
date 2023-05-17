@@ -1,5 +1,6 @@
 package manager;
 
+import client.Message;
 import com.google.gson.Gson;
 
 import java.io.*;
@@ -23,6 +24,8 @@ public class MessageChannel implements Runnable {
         this.outputs=outputs;
         this.socketNo=socketNo;
         this.server = server;
+
+
     }
 
 
@@ -33,10 +36,19 @@ public class MessageChannel implements Runnable {
         try{
             String line;
             while((line = reader.readLine()) != null){
-                ShapeData shapeData = new Gson().fromJson(line, ShapeData.class);
-                server.getShapeDataList().add(shapeData);
-                shareShape(shapeData,outputs);
-                System.out.println("Received ShapeData: " + shapeData);
+                Message message = new Gson().fromJson(line, Message.class);
+                if ("SHAPEDATA".equals(message.getType())) {
+                    ShapeData shapeData = new Gson().fromJson(message.getData(), ShapeData.class);
+                    server.getShapeDataList().add(shapeData);
+                    shareShape(shapeData,outputs);
+                    System.out.println("Received ShapeData: " + shapeData);
+                } else if ("STRING".equals(message.getType())) {
+                    System.out.println("Received string: " + message.getData());
+                    for(ShapeData shapeData : server.getShapeDataList()){
+                        System.out.println(server.getShapeDataList().size());
+                        shareShape(shapeData, outputs);
+                    }
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -49,13 +61,13 @@ public class MessageChannel implements Runnable {
         String shapeDataJson = new Gson().toJson(shapeData);
         //avoid overwrite in same client
         for(int i = 0; i < outputs.size(); i++){
-//            if(i == socketNo){
-//                continue;
-//            }
+            Message message = new Message("SHAPEDATA", shapeDataJson);
+            String messageJson = new Gson().toJson(message);
             try {
-                outputs.get(i).write((shapeDataJson + "\n").getBytes(StandardCharsets.UTF_8));
+                this.outputs.get(i).write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+                System.out.println("Send shapedata to client: " + socketNo);
             } catch (IOException e) {
-                System.out.println("Send shapedatajson to clients failed");
+                System.out.println("Send ShapeData json to client failed");
             }
         }
     }

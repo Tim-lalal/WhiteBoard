@@ -24,8 +24,8 @@ public class ClientCanvas extends JPanel {
     private ArrayList<Shape> shapes = new ArrayList<>();
     private List<ShapeData> shapeDataList;
     private int lastX, lastY;
-    private String currentTool = "line";
 
+    private String currentTool = "line";
     private Color currentColor = Color.BLACK;
 
     private float currentBrushWidth = 1.0f;
@@ -272,16 +272,20 @@ public class ClientCanvas extends JPanel {
         });
     }
 
+
+
     private void sendShapeDataToServer(ShapeData shapeData) {
         String shapeDataJson = new Gson().toJson(shapeData);
-        // 在发送的数据前添加一个换行符，这样在服务器端我们就知道何时一个ShapeData的JSON字符串结束了
+        Message message = new Message("SHAPEDATA", shapeDataJson);
+        String messageJson = new Gson().toJson(message);
         try {
-            this.output.write((shapeDataJson + "\n").getBytes(StandardCharsets.UTF_8));
+            this.output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            System.out.println("Send shapedatajson to server failed");
+            System.out.println("Send ShapeData json to server failed");
             errorCount++;
         }
     }
+
 
     //automatic called by swing
     @Override

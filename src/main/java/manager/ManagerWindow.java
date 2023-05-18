@@ -25,13 +25,14 @@ public class ManagerWindow extends JFrame {
 
         // The left panel, includes the current user list and manager's save button.
         JPanel leftPanel = new JPanel(new BorderLayout());
-        JLabel currentUserlistLabel = new JLabel("Current logged-in users:");
-        leftPanel.add(currentUserlistLabel, BorderLayout.NORTH);
+        JLabel currentClientlistLabel = new JLabel("Current logged-in users:");
+        leftPanel.add(currentClientlistLabel, BorderLayout.NORTH);
 
-        DefaultListModel<String> loggedInUsersListModel = new DefaultListModel<>();
-        JList<String> loggedInUsersList = new JList<>(loggedInUsersListModel);
-        loggedInUsersListModel.addElement(username);
-        loggedInUsersListModel.addElement("Timmy");
+        //Clients list
+        DefaultListModel<String> loggedInClientListModel = server.getLoggedInClientListModel();
+        loggedInClientListModel.addElement(username);
+        JList<String> loggedInUsersList = new JList<>(loggedInClientListModel);
+
         //add the loggedinuserlist to the scrollpane
         JScrollPane loggedInUsersScrollPane = new JScrollPane(loggedInUsersList);
         leftPanel.add(loggedInUsersScrollPane, BorderLayout.CENTER);
@@ -261,12 +262,12 @@ public class ManagerWindow extends JFrame {
                 if(e.getClickCount() == 2){
                     int selectedIndex = loggedInUsersList.locationToIndex(e.getPoint());
                     if (selectedIndex != -1){
-                        String selecteduser = loggedInUsersListModel.getElementAt(selectedIndex);
+                        String selecteduser = loggedInClientListModel.getElementAt(selectedIndex);
                         if (!selecteduser.equals(username)){
                             int result = JOptionPane.showConfirmDialog(null, "Are your sure to kick out user: " + selecteduser + "?", "Kick out user", JOptionPane.YES_NO_OPTION);
                             if (result == JOptionPane.YES_OPTION){
-                                loggedInUsersListModel.removeElementAt(selectedIndex);
-                                //The to do code to handle the actual user kick out action
+                                //Kick out the user
+                                server.disconnectClient(selecteduser);
                             }
                         }
 
@@ -279,6 +280,8 @@ public class ManagerWindow extends JFrame {
 
 
     }
+
+
 
 
 }

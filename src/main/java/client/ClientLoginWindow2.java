@@ -71,7 +71,7 @@ public class ClientLoginWindow2 extends JFrame{
                     throw new RuntimeException(ex);
                 }
                 dispose();
-                clientWindow = new ClientWindow(name, shapeDataList, output);
+//                clientWindow = new ClientWindow(name, shapeDataList, output);
 
             }
         });

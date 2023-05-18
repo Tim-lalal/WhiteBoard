@@ -281,6 +281,7 @@ public class ClientCanvas extends JPanel {
         try {
             this.output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
+//            e.printStackTrace();
             System.out.println("Send ShapeData json to server failed");
             errorCount++;
         }

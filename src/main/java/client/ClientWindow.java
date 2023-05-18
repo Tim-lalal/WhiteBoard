@@ -1,5 +1,6 @@
 package client;
 
+import com.google.gson.Gson;
 import manager.ShapeData;
 
 import javax.swing.*;
@@ -9,7 +10,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ClientWindow extends JFrame {
@@ -18,7 +22,7 @@ public class ClientWindow extends JFrame {
 
     private OutputStream output;
 
-    public ClientWindow(String username, List<ShapeData> shapeDataList, OutputStream output){
+    public ClientWindow(String username, List<ShapeData> shapeDataList, OutputStream output, DefaultListModel<String> loggedInUsersListModel, Socket socket){
         this.output = output;
         setTitle("Welcome to the Canvas!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,10 +38,7 @@ public class ClientWindow extends JFrame {
         JLabel currentUserlistLabel = new JLabel("Current logged-in users:");
         leftPanel.add(currentUserlistLabel, BorderLayout.NORTH);
 
-        DefaultListModel<String> loggedInUsersListModel = new DefaultListModel<>();
         JList<String> loggedInUsersList = new JList<>(loggedInUsersListModel);
-        loggedInUsersListModel.addElement(username);
-        loggedInUsersListModel.addElement("Timmy");
         //add the loggedinuserlist to the scrollpane
         JScrollPane loggedInUsersScrollPane = new JScrollPane(loggedInUsersList);
         leftPanel.add(loggedInUsersScrollPane, BorderLayout.CENTER);
@@ -250,6 +251,13 @@ public class ClientWindow extends JFrame {
         logoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+//                sayGoodByeToServer("logout");
+                try {
+                    sayGoodByeToServer("Shutdown this client!");
+                    socket.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
                 dispose();
                 System.exit(0);
             }
@@ -261,36 +269,23 @@ public class ClientWindow extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
-//        //loggedinuserlist mouselistener to identify which user the manager prefer to kick-out
-//        loggedInUsersList.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                if(e.getClickCount() == 2){
-//                    int selectedIndex = loggedInUsersList.locationToIndex(e.getPoint());
-//                    if (selectedIndex != -1){
-//                        String selecteduser = loggedInUsersListModel.getElementAt(selectedIndex);
-//                        if (!selecteduser.equals(username)){
-//                            int result = JOptionPane.showConfirmDialog(null, "Are your sure to kick out user: " + selecteduser + "?", "Kick out user", JOptionPane.YES_NO_OPTION);
-//                            if (result == JOptionPane.YES_OPTION){
-//                                loggedInUsersListModel.removeElementAt(selectedIndex);
-//                                //The to do code to handle the actual user kick out action
-//                            }
-//                        }
-//
-//                    }
-//                }
-//            }
-//        });
 
 
 
 
     }
 
-//    public void updateShapeDataList(List<ShapeData> shapeDataList){
-//        this.shapeDataList = shapeDataList;
-//        repaint();
-//    }
 
+    private void sayGoodByeToServer(String goodbye) {
+        Message message = new Message("GOODBYE", goodbye);
+        String messageJson = new Gson().toJson(message);
+        try {
+            System.out.println("See goodbye!");
+            this.output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Send goodbye to server failed");
+        }
+    }
 
 }

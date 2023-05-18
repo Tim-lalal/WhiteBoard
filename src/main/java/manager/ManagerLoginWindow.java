@@ -47,11 +47,10 @@ public class ManagerLoginWindow extends JFrame{
                 System.out.println("Hello: " + name);
                 dispose();
                 ManagerWindow managerWindow = new ManagerWindow(name, server);
-                // 创建一个每秒刷新一次的定时器
+                // repaint the manager canvas in period time!
                 int delay = 100; //milliseconds
                 ActionListener taskPerformer = new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        // 在这里调用你的刷新方法
                         managerWindow.repaint();
                     }
                 };

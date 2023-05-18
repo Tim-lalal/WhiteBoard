@@ -1,6 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import manager.ShapeData;
 import javax.swing.*;
 import java.awt.*;
@@ -9,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -17,6 +19,8 @@ public class ClientLoginWindow extends JFrame{
     private OutputStream output;
     private String uname = null;
     private List<ShapeData> shapeDataList = new CopyOnWriteArrayList<>();
+
+    private DefaultListModel<String> loggedInClientListModel = new DefaultListModel<>();
 
     ClientWindow clientWindow;
     public static void main(String[] args) {
@@ -61,12 +65,9 @@ public class ClientLoginWindow extends JFrame{
                     //get the client to server input and output streams
                     input = socket.getInputStream();
                     output = socket.getOutputStream();
-                    Message message = new Message("STRING",name);
-                    String messageJson = new Gson().toJson(message);
-                    output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
-                    output.flush();
+                    sendUsernameToServer("STRING",name);
                     dispose();
-                    clientWindow = new ClientWindow(name, shapeDataList, output);
+                    clientWindow = new ClientWindow(name, shapeDataList, output, loggedInClientListModel, socket);
                     MessageReceive messageReceive = new MessageReceive();
                     messageReceive.start();
 
@@ -81,6 +82,19 @@ public class ClientLoginWindow extends JFrame{
         pack();
         setLocationRelativeTo(null); // Center the window on the screen
         setVisible(true);
+
+    }
+
+    private void sendUsernameToServer(String type, String username){
+        String t = type;
+        Message message = new Message(t,username);
+        String messageJson = new Gson().toJson(message);
+        try {
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        } catch (IOException e) {
+            System.out.println("Send action failed!");
+        }
 
     }
 
@@ -102,6 +116,15 @@ public class ClientLoginWindow extends JFrame{
                     }
                     else if ("STRING".equals(message.getType())) {
                         System.out.println("Received string: " + message.getData());
+                    }
+                    else if ("CLIENTLIST".equals(message.getType())) {
+                        List<String> clientList = new Gson().fromJson(message.getData(), new TypeToken<List<String>>() {}.getType());
+                        loggedInClientListModel.clear();
+                        for(int i = 0; i < clientList.size(); i++){
+                            loggedInClientListModel.addElement(clientList.get(i));
+                        }
+                        clientWindow.repaint();
+
                     }
                 }
             }catch (Exception e){

@@ -66,9 +66,8 @@ public class ClientLoginWindow extends JFrame{
                     input = socket.getInputStream();
                     output = socket.getOutputStream();
                     sendUsernameToServer("STRING",name);
-                    dispose();
-                    clientWindow = new ClientWindow(name, shapeDataList, output, loggedInClientListModel, socket);
-                    MessageReceive messageReceive = new MessageReceive();
+                    sendLoginRequestToServer("LOGINREQUEST",name);
+                    MessageReceive messageReceive = new MessageReceive(name, socket);
                     messageReceive.start();
 
 
@@ -86,8 +85,7 @@ public class ClientLoginWindow extends JFrame{
     }
 
     private void sendUsernameToServer(String type, String username){
-        String t = type;
-        Message message = new Message(t,username);
+        Message message = new Message(type,username);
         String messageJson = new Gson().toJson(message);
         try {
             output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
@@ -98,9 +96,27 @@ public class ClientLoginWindow extends JFrame{
 
     }
 
+    private void sendLoginRequestToServer(String type, String username){
+        Message message = new Message(type, username);
+        String messageJson = new Gson().toJson(message);
+        try{
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        }catch (IOException e){
+            System.out.println("Send the request failed!");
+        }
+    }
+
 
 
     class MessageReceive extends Thread{
+        String name;
+
+        Socket socket;
+        public  MessageReceive(String name, Socket socket){
+            this.name = name;
+            this.socket = socket;
+        }
         @Override
         public void run() {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
@@ -108,16 +124,30 @@ public class ClientLoginWindow extends JFrame{
                 String line;
                 while ((line = reader.readLine()) != null){
                     Message message = new Gson().fromJson(line, Message.class);
-                    if ("SHAPEDATA".equals(message.getType())) {
+                    if ("ACCEPT".equals(message.getType())) {
+                        dispose();
+                        clientWindow = new ClientWindow(name, shapeDataList, output, loggedInClientListModel, socket);
+
+                    } else if ("DENY".equals(message.getType())) {
+                        System.out.println("Received deny from server! " + message.getData());
+                        JDialog dialog = new JDialog();
+                        dialog.setModal(true);
+                        dialog.setTitle("Server Denied The Login Action");
+                        dialog.setSize(400, 150);
+                        dialog.setLayout(new BorderLayout());
+                        JLabel messageLabel = new JLabel("The Server denied your connection request!", SwingConstants.CENTER);
+                        dialog.add(messageLabel, BorderLayout.CENTER);
+                        JButton closeButton = new JButton("Close");
+                        closeButton.addActionListener(excep -> dialog.dispose());
+                        dialog.add(closeButton, BorderLayout.SOUTH);
+                        dialog.setLocationRelativeTo(null);  // Center the dialog
+                        dialog.setVisible(true);
+                    } else if ("SHAPEDATA".equals(message.getType())) {
                         ShapeData shapeData = new Gson().fromJson(message.getData(), ShapeData.class);
                         shapeDataList.add(shapeData);
                         System.out.println("receive ShapeData from Server: " + shapeData);
                         clientWindow.repaint();
-                    }
-                    else if ("STRING".equals(message.getType())) {
-                        System.out.println("Received string: " + message.getData());
-                    }
-                    else if ("CLIENTLIST".equals(message.getType())) {
+                    } else if ("CLIENTLIST".equals(message.getType())) {
                         List<String> clientList = new Gson().fromJson(message.getData(), new TypeToken<List<String>>() {}.getType());
                         loggedInClientListModel.clear();
                         for(int i = 0; i < clientList.size(); i++){
@@ -125,6 +155,10 @@ public class ClientLoginWindow extends JFrame{
                         }
                         clientWindow.repaint();
 
+                    } else if ("CLEAR".equals(message.getType())) {
+                        shapeDataList.clear();
+                        System.out.println("Clear the canvas");
+                        clientWindow.repaint();
                     }
                 }
             }catch (Exception e){

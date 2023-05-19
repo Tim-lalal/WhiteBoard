@@ -13,6 +13,7 @@ import java.util.List;
 
 public class MessageChannel implements Runnable {
     private InputStream input;
+    private OutputStream output;
     private ArrayList<OutputStream> outputs;
     private int socketNo = 0;
 
@@ -22,11 +23,14 @@ public class MessageChannel implements Runnable {
 
     private String clientName;
 
+    private JFrame jFrame;
+
 
     public MessageChannel(){
     }
-    public MessageChannel(int socketNo, InputStream input, ArrayList<OutputStream> outputs, Server server, Socket clientSocket) {
+    public MessageChannel(int socketNo, InputStream input, OutputStream output, ArrayList<OutputStream> outputs, Server server, Socket clientSocket) {
         this.input=input;
+        this.output=output;
         this.outputs=outputs;
         this.socketNo=socketNo;
         this.server = server;
@@ -49,24 +53,35 @@ public class MessageChannel implements Runnable {
                     server.getShapeDataList().add(shapeData);
                     shareShape(shapeData,outputs,clientName);
                     System.out.println("Received ShapeData: " + shapeData);
-                } else if ("STRING".equals(message.getType())) {
-                    System.out.println("Received string: " + message.getData());
-                    clientName = message.getData();
-                    server.getLoggedInClientListModel().addElement(message.getData()); // add clientName in listModel
-                    server.addClientToMap(message.getData(), clientSocket); // add clientName and socket to Map
-                    shareClientList(server.getLoggedInClientListModel(),outputs);//share clientList to client
-                    for(ShapeData shapeData : server.getShapeDataList()){
-                        System.out.println(server.getShapeDataList().size());
-                        shareShape(shapeData, outputs,clientName);
+                }else if("LOGINREQUEST".equals(message.getType())) {
+                    int response = JOptionPane.showConfirmDialog(jFrame,
+                            "Would you like to accept the "+ message.getData() +"'s login request?",
+                            "Login Request",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
+                    if (response == JOptionPane.YES_OPTION) {
+                        System.out.println("Accept!");
+                        System.out.println("Received string: " + message.getData());
+                        sendAcceptInforToClient("ACCEPT","Accept login",output);
+                        clientName = message.getData();
+                        server.getLoggedInClientListModel().addElement(message.getData()); // add clientName in listModel
+                        server.addClientToMap(message.getData(), clientSocket); // add clientName and socket to Map
+                        shareClientList(server.getLoggedInClientListModel(),outputs);//share clientList to client
+                        for(ShapeData shapeData : server.getShapeDataList()){
+                            System.out.println(server.getShapeDataList().size());
+                            shareShape(shapeData, outputs,clientName);
+                        }
+                        // Accept the login request
+                    } else if (response == JOptionPane.NO_OPTION) {
+                        System.out.println("Deny!");
+                        sendDenyInforToClient("DENY","Login Denied",output);
+                        // Reject the login request
                     }
-                } else if ("GOODBYE".equals(message.getType())) {
-                    System.out.println("This client logged out!");
-                    server.getLoggedInClientListModel().removeElement(clientName);
-
                 }
+
             }
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.printf("Current No Clients!");
         }
 
 
@@ -74,12 +89,12 @@ public class MessageChannel implements Runnable {
 
     public void shareShape(ShapeData shapeData, ArrayList<OutputStream> outputs, String socketName){
         String shapeDataJson = new Gson().toJson(shapeData);
+        Message message = new Message("SHAPEDATA", shapeDataJson);
+        String messageJson = new Gson().toJson(message);
         //avoid overwrite in same client
         for(int i = 0; i < outputs.size(); i++){
-            Message message = new Message("SHAPEDATA", shapeDataJson);
-            String messageJson = new Gson().toJson(message);
             try {
-                this.outputs.get(i).write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+                outputs.get(i).write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
                 System.out.println("Send shapedata to client: " + socketNo);
             } catch (IOException e) {
                 System.out.println("Send ShapeData json to client：" + outputs.get(i) + " failed, so we close the socket!");
@@ -88,6 +103,18 @@ public class MessageChannel implements Runnable {
                 server.getLoggedInClientListModel().removeElement(socketName);
                 server.getClientMap().remove(socketName);
                 shareClientList(server.getLoggedInClientListModel(),outputs);
+            }
+        }
+    }
+
+    public void clearCanvas(String type, String action, ArrayList<OutputStream> outputs){
+        Message message = new Message(type, action);
+        String messageJson = new Gson().toJson(message);
+        for(int i = 0; i < outputs.size(); i++){
+            try {
+                outputs.get(i).write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                System.out.println("Clear the canvas failed!");
             }
         }
     }
@@ -116,5 +143,25 @@ public class MessageChannel implements Runnable {
     }
 
 
+    private void sendAcceptInforToClient(String type, String infor, OutputStream output){
+        Message message = new Message(type, infor);
+        String messageJson = new Gson().toJson(message);
+        try {
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        } catch (IOException e) {
+            System.out.println("Send Accept info to client fail");
+        }
+    }
+    private void sendDenyInforToClient(String type, String infor, OutputStream output){
+        Message message = new Message(type, infor);
+        String messageJson = new Gson().toJson(message);
+        try {
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        } catch (IOException e) {
+            System.out.println("Send deny info to client fail");
+        }
+    }
 
 }

@@ -117,7 +117,7 @@ public class ClientCanvas extends JPanel {
                 lastX = x;
                 lastY = y;
                 repaint();
-                if (errorCount >= 2) {
+                if (errorCount > 1) {
                     JDialog dialog = new JDialog();
                     dialog.setModal(true);
                     dialog.setTitle("Connection Error");
@@ -158,7 +158,7 @@ public class ClientCanvas extends JPanel {
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
-                    if (errorCount >= 2) {
+                    if (errorCount > 1) {
                         JDialog dialog = new JDialog();
                         dialog.setModal(true);
                         dialog.setTitle("Connection Error");
@@ -205,7 +205,7 @@ public class ClientCanvas extends JPanel {
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
-                    if (errorCount >= 2) {
+                    if (errorCount > 1) {
                         JDialog dialog = new JDialog();
                         dialog.setModal(true);
                         dialog.setTitle("Connection Error");
@@ -251,7 +251,7 @@ public class ClientCanvas extends JPanel {
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
-                    if (errorCount >= 2) {
+                    if (errorCount > 1) {
                         JDialog dialog = new JDialog();
                         dialog.setModal(true);
                         dialog.setTitle("Connection Error");

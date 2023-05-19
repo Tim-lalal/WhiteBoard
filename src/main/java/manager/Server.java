@@ -86,7 +86,7 @@ public class Server {
 
                 // the only way of input from server
                 //server与client之间建立的一个channel，这个channel中有一个while循环监听来自于client的数据，并将这个数据发送给其他的clients
-                MessageChannel channel = new MessageChannel((sockets.size()), input, outputs, server, clientSocket);
+                MessageChannel channel = new MessageChannel((sockets.size()), input,output, outputs, server, clientSocket);
                 System.out.println("Socket size: "+ sockets.size());
                 clientExecutorService.execute(channel);
 
@@ -135,59 +135,59 @@ public class Server {
 
         // Any additional cleanup (e.g., remove from other data structures, etc.)
     }
-
-    public void monitorConnections() {
-        new Thread(() -> {
-            while (true) {
-                //for loop find out which client socket is closed
-                for(String clientName : new ArrayList<>(clientMap.keySet())){
-                    System.out.println("The current connected client name: "+ clientName);
-                    Socket clientSocket = clientMap.get(clientName);
-                    InputStream inputStream = inputMap.get(clientSocket);
-                    try {
-                        inputStream.mark(1);
-                        if (inputStream.read() == -1) {
-                            System.out.println("We are in this expcetion: --------------");
-                            throw new IOException();
-                        }
-                        inputStream.reset();
-                    } catch (IOException e) {
-                        System.out.println("The client: " + clientName + " is closed");
-                        //remove the input and output stream from inputlist and outputlist
-                        try{
-                            OutputStream outputStream = outputMap.get(clientSocket);
-                            if (inputStream != null) {
-                                inputStream.close();
-                                inputs.remove(inputStream);
-                                inputMap.remove(clientSocket);
-                            }
-                            if (outputStream != null) {
-                                outputStream.close();
-                                outputs.remove(outputStream);
-                                outputMap.remove(clientSocket);
-                            }
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                        loggedInClientListModel.removeElement(clientName);
-                        clientMap.remove(clientName);
-                        new MessageChannel().shareClientList(loggedInClientListModel,outputs);
-                        System.out.println("Client " + clientName + " has disconnected");
-                        try {
-                            clientSocket.close();
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    }
-                }
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
+//
+//    public void monitorConnections() {
+//        new Thread(() -> {
+//            while (true) {
+//                //for loop find out which client socket is closed
+//                for(String clientName : new ArrayList<>(clientMap.keySet())){
+//                    System.out.println("The current connected client name: "+ clientName);
+//                    Socket clientSocket = clientMap.get(clientName);
+//                    InputStream inputStream = inputMap.get(clientSocket);
+//                    try {
+//                        inputStream.mark(1);
+//                        if (inputStream.read() == -1) {
+//                            System.out.println("We are in this expcetion: --------------");
+//                            throw new IOException();
+//                        }
+//                        inputStream.reset();
+//                    } catch (IOException e) {
+//                        System.out.println("The client: " + clientName + " is closed");
+//                        //remove the input and output stream from inputlist and outputlist
+//                        try{
+//                            OutputStream outputStream = outputMap.get(clientSocket);
+//                            if (inputStream != null) {
+//                                inputStream.close();
+//                                inputs.remove(inputStream);
+//                                inputMap.remove(clientSocket);
+//                            }
+//                            if (outputStream != null) {
+//                                outputStream.close();
+//                                outputs.remove(outputStream);
+//                                outputMap.remove(clientSocket);
+//                            }
+//                        } catch (IOException ex) {
+//                            ex.printStackTrace();
+//                        }
+//                        loggedInClientListModel.removeElement(clientName);
+//                        clientMap.remove(clientName);
+//                        new MessageChannel().shareClientList(loggedInClientListModel,outputs);
+//                        System.out.println("Client " + clientName + " has disconnected");
+//                        try {
+//                            clientSocket.close();
+//                        } catch (IOException ex) {
+//                            throw new RuntimeException(ex);
+//                        }
+//                    }
+//                }
+//                try {
+//                    Thread.sleep(500);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
+//    }
 
 
 

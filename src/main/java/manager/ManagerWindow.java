@@ -1,22 +1,29 @@
 package manager;
 
 
+import client.Message;
+import com.google.gson.Gson;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
+
 
 public class ManagerWindow extends JFrame {
+    JTextArea chatArea;
 
 
     public ManagerWindow(String username, Server server){
         setTitle("Welcome to the Canvas!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000,800);
+        setSize(1300,800);
         ManagerCanvas managerCanvas = new ManagerCanvas(server);
 
         //the main canvas panel with BorderLayout for adjustment
@@ -111,12 +118,58 @@ public class ManagerWindow extends JFrame {
             }
         });
 
+        // Create the chatPanel
+        JPanel chatPanel = new JPanel();
+        chatPanel.setLayout(new BorderLayout());
+        chatPanel.setPreferredSize(new Dimension(300, 600)); // Set the preferred size to manage the width of the chat panel
+
+        // Display Area
+        chatArea = new JTextArea();
+        chatArea.setEditable(false); // Make it so the user cannot edit the display area
+        JScrollPane chatScrollPane = new JScrollPane(chatArea);
+        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
+
+        // Create a new panel to hold the user input area and the send button
+        JPanel southPanel = new JPanel();
+        southPanel.setLayout(new BorderLayout());
+
+        // User Input Area
+        JTextField chatField = new JTextField();
+        southPanel.add(chatField, BorderLayout.CENTER);
+
+        // Send Button
+        JButton sendButton = new JButton("Send");
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = chatField.getText();
+                if (!message.isEmpty()) {
+                    chatArea.append(username +": " + message + "\n"); // append the message to the chat area with a newline
+                    sendTextToAll(server.getOutputs(), username, message);
+                    chatField.setText(""); // Clear the input field
+                }
+            }
+        });
+        southPanel.add(sendButton, BorderLayout.SOUTH);
+
+        // Add the southPanel to the chatPanel
+        chatPanel.add(southPanel, BorderLayout.SOUTH);
+
+        // Create a new JPanel to hold both the canvas and the chatPanel
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BorderLayout()); // Set the layout to BorderLayout
+
+        centerPanel.add(managerCanvas, BorderLayout.CENTER);
+        centerPanel.add(chatPanel, BorderLayout.EAST);
+
+        // Add the centerPanel to the mainPanel
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
 
 
 
-        //drawpanel
-//        canvas.setCurrentTool("line");
-        mainPanel.add(managerCanvas, BorderLayout.CENTER);
+
+
+
 
         // Right Panel with user info, tools, and logout button
         JPanel rightPanel = new JPanel(new BorderLayout());
@@ -268,6 +321,7 @@ public class ManagerWindow extends JFrame {
                             if (result == JOptionPane.YES_OPTION){
                                 //Kick out the user
                                 server.disconnectClient(selecteduser);
+
                             }
                         }
 
@@ -281,8 +335,23 @@ public class ManagerWindow extends JFrame {
 
     }
 
+    public void sendTextToAll(ArrayList<OutputStream> outputs, String username, String text){
+        TextData textData = new TextData(username, text);
+        String textDataJson = new Gson().toJson(textData);
+        for(OutputStream output : outputs){
+            Message message = new Message("TEXTDATA",textDataJson);
+            String messageJson = new Gson().toJson(message);
+            try {
+                output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                System.out.println("Send TextData to client failed!");
+            }
+        }
+    }
 
-
+    public JTextArea getChatArea() {
+        return chatArea;
+    }
 
 }
 

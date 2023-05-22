@@ -77,6 +77,14 @@ public class MessageChannel implements Runnable {
                         sendDenyInforToClient("DENY","Login Denied",output);
                         // Reject the login request
                     }
+                } else if ("CLIENTDOWN".equals(message.getType())) {
+                    String username = message.getData();
+                    server.getLoggedInClientListModel().removeElement(username);
+                } else if ("TEXTDATA".equals(message.getType())) {
+                    TextData textData = new Gson().fromJson(message.getData(), TextData.class);
+                    String name = textData.getName();
+                    String text = textData.getText();
+                    server.updateTextArea(name,text);
                 }
 
             }

@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 
 public class ManagerLoginWindow extends JFrame{
 
+    ManagerWindow managerWindow;
+
     public ManagerLoginWindow(){
 
     }
@@ -46,7 +48,7 @@ public class ManagerLoginWindow extends JFrame{
                 String name = usernametext.getText();
                 System.out.println("Hello: " + name);
                 dispose();
-                ManagerWindow managerWindow = new ManagerWindow(name, server);
+                managerWindow = new ManagerWindow(name, server);
                 // repaint the manager canvas in period time!
                 int delay = 100; //milliseconds
                 ActionListener taskPerformer = new ActionListener() {
@@ -63,15 +65,11 @@ public class ManagerLoginWindow extends JFrame{
         setVisible(true);
     }
 
+    public ManagerWindow getManagerWindow() {
+        return managerWindow;
+    }
 }
 
-//class main{
-//    public static void main(String[] args) {
-//        LoginWindow login = new LoginWindow();
-//        login.inputWindow();
-//
-//    }
-//}
 
 
 

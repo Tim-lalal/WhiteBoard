@@ -23,10 +23,6 @@ public class Server {
 
     private final DefaultListModel<String> loggedInClientListModel = new DefaultListModel<>();
 
-    public DefaultListModel<String> getLoggedInClientListModel() {
-        return loggedInClientListModel;
-    }
-
     private final ArrayList<Socket> sockets=new ArrayList<>();
 
     private ArrayList<InputStream>inputs=new ArrayList<>();
@@ -34,8 +30,10 @@ public class Server {
 
     private static Server server;
 
-    private final ConcurrentHashMap<Socket, InputStream> inputMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Socket, OutputStream> outputMap = new ConcurrentHashMap<>();
+
+    private List<TextData> textDataList = new CopyOnWriteArrayList<>();
+
+    ManagerLoginWindow manager;
 
     public static void main(String[] args) {
         server = new Server();
@@ -51,6 +49,9 @@ public class Server {
         return clientMap;
     }
 
+    public DefaultListModel<String> getLoggedInClientListModel() {
+        return loggedInClientListModel;
+    }
 
     public void create() {
 
@@ -63,7 +64,7 @@ public class Server {
         ServerSocket serverSocket;
 
 
-        ManagerLoginWindow manager = new ManagerLoginWindow();
+        manager = new ManagerLoginWindow();
         manager.inputWindow(server);
 
         try {
@@ -79,8 +80,6 @@ public class Server {
                 //get the input output streams
                 InputStream input=clientSocket.getInputStream();
                 OutputStream output=clientSocket.getOutputStream();
-                inputMap.put(clientSocket, input);
-                outputMap.put(clientSocket,output);
                 inputs.add(input);
                 outputs.add(output);
 
@@ -135,62 +134,16 @@ public class Server {
 
         // Any additional cleanup (e.g., remove from other data structures, etc.)
     }
-//
-//    public void monitorConnections() {
-//        new Thread(() -> {
-//            while (true) {
-//                //for loop find out which client socket is closed
-//                for(String clientName : new ArrayList<>(clientMap.keySet())){
-//                    System.out.println("The current connected client name: "+ clientName);
-//                    Socket clientSocket = clientMap.get(clientName);
-//                    InputStream inputStream = inputMap.get(clientSocket);
-//                    try {
-//                        inputStream.mark(1);
-//                        if (inputStream.read() == -1) {
-//                            System.out.println("We are in this expcetion: --------------");
-//                            throw new IOException();
-//                        }
-//                        inputStream.reset();
-//                    } catch (IOException e) {
-//                        System.out.println("The client: " + clientName + " is closed");
-//                        //remove the input and output stream from inputlist and outputlist
-//                        try{
-//                            OutputStream outputStream = outputMap.get(clientSocket);
-//                            if (inputStream != null) {
-//                                inputStream.close();
-//                                inputs.remove(inputStream);
-//                                inputMap.remove(clientSocket);
-//                            }
-//                            if (outputStream != null) {
-//                                outputStream.close();
-//                                outputs.remove(outputStream);
-//                                outputMap.remove(clientSocket);
-//                            }
-//                        } catch (IOException ex) {
-//                            ex.printStackTrace();
-//                        }
-//                        loggedInClientListModel.removeElement(clientName);
-//                        clientMap.remove(clientName);
-//                        new MessageChannel().shareClientList(loggedInClientListModel,outputs);
-//                        System.out.println("Client " + clientName + " has disconnected");
-//                        try {
-//                            clientSocket.close();
-//                        } catch (IOException ex) {
-//                            throw new RuntimeException(ex);
-//                        }
-//                    }
-//                }
-//                try {
-//                    Thread.sleep(500);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
-//    }
 
+    public void updateTextArea(String username, String text){
+        manager.getManagerWindow().getChatArea().append(username +": " + text + "\n");
+    }
 
+    public List<TextData> getTextDataList() {
+        return textDataList;
+    }
 
-
-
+    public void setTextDataList(List<TextData> textDataList) {
+        this.textDataList = textDataList;
+    }
 }

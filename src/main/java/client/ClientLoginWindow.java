@@ -3,6 +3,8 @@ package client;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import manager.ShapeData;
+import manager.TextData;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -72,7 +74,7 @@ public class ClientLoginWindow extends JFrame{
 
 
                 } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+                    System.out.println("Connection Refused, or Server not On!");
                 }
 
             }
@@ -159,6 +161,10 @@ public class ClientLoginWindow extends JFrame{
                         shapeDataList.clear();
                         System.out.println("Clear the canvas");
                         clientWindow.repaint();
+                    } else if ("TEXTDATA".equals(message.getType())) {
+                        TextData textData = new Gson().fromJson(message.getData(), TextData.class);
+
+                        clientWindow.addTextToTextArea(textData.getName() + ": " + textData.getText() +"\n");
                     }
                 }
             }catch (Exception e){

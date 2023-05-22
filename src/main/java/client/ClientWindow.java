@@ -2,6 +2,7 @@ package client;
 
 import com.google.gson.Gson;
 import manager.ShapeData;
+import manager.TextData;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientWindow extends JFrame {
@@ -22,11 +24,13 @@ public class ClientWindow extends JFrame {
 
     private OutputStream output;
 
+    private JTextArea chatArea;
+
     public ClientWindow(String username, List<ShapeData> shapeDataList, OutputStream output, DefaultListModel<String> loggedInUsersListModel, Socket socket){
         this.output = output;
         setTitle("Welcome to the Canvas!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000,800);
+        setSize(1300,800);
         ClientCanvas clientCanvas = new ClientCanvas(shapeDataList,output,this);
 
         //the main canvas panel with BorderLayout for adjustment
@@ -42,88 +46,66 @@ public class ClientWindow extends JFrame {
         //add the loggedinuserlist to the scrollpane
         JScrollPane loggedInUsersScrollPane = new JScrollPane(loggedInUsersList);
         leftPanel.add(loggedInUsersScrollPane, BorderLayout.CENTER);
-//        //Manager actions panel
-//        JPanel ManagerActionsPanel = new JPanel(new GridBagLayout());
-//        GridBagConstraints gbcActions = new GridBagConstraints();
-//
-//        JButton clearButton = new JButton("Clear Current Board");
-//        JButton saveButton = new JButton("Save Current Board");
-//        JButton importButton = new JButton("Import Board");
-//
-//        gbcActions.gridx = 0;
-//        gbcActions.gridy = 0;
-//        gbcActions.insets = new Insets(5, 5, 5, 5); // Add some padding around the buttons
-//        ManagerActionsPanel.add(clearButton, gbcActions);
-//        gbcActions.gridy = 1;
-//        ManagerActionsPanel.add(saveButton, gbcActions);
-//        gbcActions.gridy = 2;
-//        ManagerActionsPanel.add(importButton, gbcActions);
-//        leftPanel.add(ManagerActionsPanel, BorderLayout.SOUTH);
+
 
         mainPanel.add(leftPanel, BorderLayout.WEST);
 
 
-//        clearButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                canvas.clearShapeDataList();
-//            }
-//        });
-//        saveButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                JFileChooser fileChooser = new JFileChooser();
-//                fileChooser.setDialogTitle("Please specify a file to save the shapes file!");
-//                int userSelection = fileChooser.showSaveDialog(null);
-//                if (userSelection == JFileChooser.APPROVE_OPTION) {
-//                    File fileToSave = fileChooser.getSelectedFile();
-//                    String savePath = fileToSave.getAbsolutePath();
-//                    if(!savePath.toLowerCase().endsWith(".json")){
-//                        JOptionPane.showMessageDialog(null,"Wrong file format to saving shapes","Saving",JOptionPane.ERROR_MESSAGE);
-//                    }else {
-//                        Boolean saveToJsonResult = canvas.saveToJson(savePath, canvas.getShapeDataList());
-//                        if (saveToJsonResult) {
-//                            JOptionPane.showMessageDialog(null, "Saving Successful！", "Saving", JOptionPane.INFORMATION_MESSAGE);
-//                        } else {
-//                            JOptionPane.showMessageDialog(null, "Saving Failed！", "Saving", JOptionPane.ERROR_MESSAGE);
-//                        }
-//                    }
+
+        // Create the chatPanel
+        JPanel chatPanel = new JPanel();
+        chatPanel.setLayout(new BorderLayout());
+        chatPanel.setPreferredSize(new Dimension(300, 600)); // Set the preferred size to manage the width of the chat panel
+
+        // Display Area
+        chatArea = new JTextArea();
+        chatArea.setEditable(false); // Make it so the user cannot edit the display area
+        JScrollPane chatScrollPane = new JScrollPane(chatArea);
+        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
+
+        // Create a new panel to hold the user input area and the send button
+        JPanel southPanel = new JPanel();
+        southPanel.setLayout(new BorderLayout());
+
+        // User Input Area
+        JTextField chatField = new JTextField();
+        southPanel.add(chatField, BorderLayout.CENTER);
+
+        // Send Button
+        JButton sendButton = new JButton("Send");
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = chatField.getText();
+                if (!message.isEmpty()) {
+                    chatArea.append(username +": " + message + "\n"); // append the message to the chat area with a newline
+                    sendTextToServer(output, username, message);
+                    // Send message to server
+
+                    chatField.setText(""); // Clear the input field
+                }
+            }
+        });
+        southPanel.add(sendButton, BorderLayout.SOUTH);
+
+        // Add the southPanel to the chatPanel
+        chatPanel.add(southPanel, BorderLayout.SOUTH);
+
+        // Create a new JPanel to hold both the canvas and the chatPanel
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BorderLayout()); // Set the layout to BorderLayout
+
+        centerPanel.add(clientCanvas, BorderLayout.CENTER);
+        centerPanel.add(chatPanel, BorderLayout.EAST);
+
+        // Add the centerPanel to the mainPanel
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+
+
 //
-//                }
-//            }
-//        });
-//        importButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                JFileChooser fileChooser = new JFileChooser();
-//                fileChooser.setDialogTitle("Please specify a file to import the shapes!");
-//                int userSelection = fileChooser.showSaveDialog(null);
-//                if (userSelection == JFileChooser.APPROVE_OPTION){
-//                    File fileToImport = fileChooser.getSelectedFile();
-//                    String importPath = fileToImport.getAbsolutePath();
-//                    try{
-//                        ArrayList<ShapeData> importedShapes = canvas.loadFromJson(importPath);
-//                        if (importedShapes == null){
-//                            JOptionPane.showMessageDialog(null, "This file is empty!","failure", JOptionPane.INFORMATION_MESSAGE);
-//                        }else{
-//                            canvas.getShapeDataList().clear();
-//                            canvas.getShapeDataList().addAll(importedShapes);
-//                            repaint();
-//                        }
-//                    }catch (Exception exception){
-//                        JOptionPane.showMessageDialog(null, "Import Failed!","failure", JOptionPane.INFORMATION_MESSAGE);
-//                    }
-//
-//                }
-//            }
-//        });
-
-
-
-
-        //drawpanel
-//        canvas.setCurrentTool("line");
-        mainPanel.add(clientCanvas, BorderLayout.CENTER);
+//        //drawpanel
+////        canvas.setCurrentTool("line");
+//        mainPanel.add(clientCanvas, BorderLayout.CENTER);
 
         // Right Panel with user info, tools, and logout button
         JPanel rightPanel = new JPanel(new BorderLayout());
@@ -251,9 +233,8 @@ public class ClientWindow extends JFrame {
         logoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                sayGoodByeToServer("logout");
                 try {
-                    sayGoodByeToServer("Shutdown this client!");
+                    sayGoodByeToServer(username);
                     socket.close();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
@@ -277,15 +258,32 @@ public class ClientWindow extends JFrame {
 
 
     private void sayGoodByeToServer(String goodbye) {
-        Message message = new Message("GOODBYE", goodbye);
+        Message message = new Message("CLIENTDOWN", goodbye);
         String messageJson = new Gson().toJson(message);
         try {
             System.out.println("See goodbye!");
             this.output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            e.printStackTrace();
             System.out.println("Send goodbye to server failed");
         }
     }
+
+    public void addTextToTextArea(String text){
+        chatArea.append(text);
+    }
+
+    public void sendTextToServer(OutputStream output, String username, String text){
+        TextData textData = new TextData(username, text);
+        String textDataJson = new Gson().toJson(textData);
+        Message message = new Message("TEXTDATA", textDataJson);
+        String messageJson = new Gson().toJson(message);
+        try {
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            System.out.println("Send textData to server failed!");
+        }
+
+    }
+
 
 }

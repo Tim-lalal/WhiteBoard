@@ -78,7 +78,6 @@ public class ClientWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String message = chatField.getText();
                 if (!message.isEmpty()) {
-                    chatArea.append(username +": " + message + "\n"); // append the message to the chat area with a newline
                     sendTextToServer(output, username, message);
                     // Send message to server
 
@@ -102,10 +101,6 @@ public class ClientWindow extends JFrame {
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
 
-//
-//        //drawpanel
-////        canvas.setCurrentTool("line");
-//        mainPanel.add(clientCanvas, BorderLayout.CENTER);
 
         // Right Panel with user info, tools, and logout button
         JPanel rightPanel = new JPanel(new BorderLayout());

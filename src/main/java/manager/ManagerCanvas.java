@@ -235,7 +235,6 @@ public class ManagerCanvas extends JPanel {
 
 
     protected Boolean saveToJson(String path, List<ShapeData> shapeDataList) {
-//        shapeDataList.add(shapeData); // 将新的shapeData添加到shapeDataList中
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonString = gson.toJson(shapeDataList);
 

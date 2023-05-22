@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ClientLoginWindow extends JFrame{
+public class ClientLoginWindow3 extends JFrame{
     private InputStream input;
     private OutputStream output;
     private String uname = null;
@@ -25,8 +25,8 @@ public class ClientLoginWindow extends JFrame{
 
     ClientWindow clientWindow;
     public static void main(String[] args) {
-        ClientLoginWindow clientLoginWindow = new ClientLoginWindow();
-        clientLoginWindow.init();
+        ClientLoginWindow3 clientLoginWindow3 = new ClientLoginWindow3();
+        clientLoginWindow3.init();
     }
     private void init() {
 
@@ -66,6 +66,7 @@ public class ClientLoginWindow extends JFrame{
                     //get the client to server input and output streams
                     input = socket.getInputStream();
                     output = socket.getOutputStream();
+                    sendUsernameToServer("STRING",name);
                     sendLoginRequestToServer("LOGINREQUEST",name);
                     MessageReceive messageReceive = new MessageReceive(name, socket);
                     messageReceive.start();
@@ -84,6 +85,17 @@ public class ClientLoginWindow extends JFrame{
 
     }
 
+    private void sendUsernameToServer(String type, String username){
+        Message message = new Message(type,username);
+        String messageJson = new Gson().toJson(message);
+        try {
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        } catch (IOException e) {
+            System.out.println("Send action failed!");
+        }
+
+    }
 
     private void sendLoginRequestToServer(String type, String username){
         Message message = new Message(type, username);

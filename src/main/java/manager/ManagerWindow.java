@@ -19,6 +19,7 @@ import java.util.ArrayList;
 public class ManagerWindow extends JFrame {
     JTextArea chatArea;
 
+    public ManagerWindow(){};
 
     public ManagerWindow(String username, Server server){
         setTitle("Welcome to the Canvas!");
@@ -109,6 +110,10 @@ public class ManagerWindow extends JFrame {
                             server.getShapeDataList().clear();
                             server.getShapeDataList().addAll(importedShapes);
                             repaint();
+                            MessageChannel messageChannel = new MessageChannel();
+                            for(ShapeData shapeData : server.getShapeDataList()){
+                                messageChannel.shareShape(shapeData,server.getOutputs(), username);
+                            }
                         }
                     }catch (Exception exception){
                         JOptionPane.showMessageDialog(null, "Import Failed!","failure", JOptionPane.INFORMATION_MESSAGE);

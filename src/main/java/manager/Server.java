@@ -21,6 +21,10 @@ public class Server {
     //using ConcurrentHashMap to saving the username and clientSocket
     private final ConcurrentHashMap<String, Socket> clientMap = new ConcurrentHashMap<>();
 
+    private final ConcurrentHashMap<String, OutputStream> clientNameOutput = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<String, InputStream> clientNameInput = new ConcurrentHashMap<>();
+
     private final DefaultListModel<String> loggedInClientListModel = new DefaultListModel<>();
 
     private final ArrayList<Socket> sockets=new ArrayList<>();
@@ -51,6 +55,14 @@ public class Server {
 
     public DefaultListModel<String> getLoggedInClientListModel() {
         return loggedInClientListModel;
+    }
+
+    public ConcurrentHashMap<String, OutputStream> getClientNameOutput(){
+        return clientNameOutput;
+    }
+
+    public ConcurrentHashMap<String, InputStream> getClientNameInput(){
+        return clientNameInput;
     }
 
     public void create() {
@@ -103,17 +115,19 @@ public class Server {
         clientMap.put(clientName, clientSocket);
     }
 
+    public void addClientOutput(String clientName, OutputStream output){
+        clientNameOutput.put(clientName,output);
+    }
+
+    public void addClientInput(String clientName, InputStream input){
+        clientNameInput.put(clientName,input);
+    }
+
     public List<ShapeData> getShapeDataList() {
         return shapeDataList;
     }
 
-    public void setShapeDataList(List<ShapeData> shapeDataList) {
-        this.shapeDataList = shapeDataList;
-    }
 
-    public void addShapeDataToList(ShapeData shapeData){
-        this.shapeDataList.add(shapeData);
-    }
 
     public ArrayList<OutputStream> getOutputs(){
         return outputs;
@@ -121,18 +135,20 @@ public class Server {
 
     public void disconnectClient(String clientName) {
         // find the socket corresponding to the clientName
-        Socket clientSocket = clientMap.get(clientName); // you'll need to implement this part based on how you're storing client connections
-
+        Socket clientSocket = clientMap.get(clientName);
         try {
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         // Remove the clientName from the list of clients
         loggedInClientListModel.removeElement(clientName);
+        OutputStream output = clientNameOutput.get(clientName);
+        outputs.remove(output);
+        InputStream input = clientNameInput.get(clientName);
+        inputs.remove(input);
+        new MessageChannel().shareClientList(loggedInClientListModel, outputs);
 
-        // Any additional cleanup (e.g., remove from other data structures, etc.)
     }
 
     public void updateTextArea(String username, String text){

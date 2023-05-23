@@ -143,7 +143,6 @@ public class ClientLoginWindow extends JFrame{
                             loggedInClientListModel.addElement(clientList.get(i));
                         }
                         clientWindow.repaint();
-
                     } else if ("CLEAR".equals(message.getType())) {
                         shapeDataList.clear();
                         System.out.println("Clear the canvas");
@@ -152,6 +151,20 @@ public class ClientLoginWindow extends JFrame{
                         TextData textData = new Gson().fromJson(message.getData(), TextData.class);
 
                         clientWindow.addTextToTextArea(textData.getName() + ": " + textData.getText() +"\n");
+                    } else if ("KICKOUT".equals(message.getType())) {
+                        JDialog dialog = new JDialog();
+                        dialog.setModal(true);
+                        dialog.setTitle("Manager Kick Out");
+                        dialog.setSize(400, 150);
+                        dialog.setLayout(new BorderLayout());
+                        JLabel messageLabel = new JLabel("Client Kick You out, you will be logged off.", SwingConstants.CENTER);
+                        dialog.add(messageLabel, BorderLayout.CENTER);
+                        JButton closeButton = new JButton("Shutdown");
+                        closeButton.addActionListener(excep -> dialog.dispose());
+                        dialog.add(closeButton, BorderLayout.SOUTH);
+                        clientWindow.dispose();
+                        dialog.setLocationRelativeTo(null);  // Center the dialog
+                        dialog.setVisible(true);
                     }
                 }
             }catch (Exception e){

@@ -74,13 +74,13 @@ public class ManagerWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Please specify a file to save the shapes file!");
+                fileChooser.setDialogTitle("Please specify a file to save the shapes file! End with '.json'");
                 int userSelection = fileChooser.showSaveDialog(null);
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = fileChooser.getSelectedFile();
                     String savePath = fileToSave.getAbsolutePath();
                     if(!savePath.toLowerCase().endsWith(".json")){
-                        JOptionPane.showMessageDialog(null,"Wrong file format to saving shapes","Saving",JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null,"Wrong file format to saving shapes, end with '.json'","Saving",JOptionPane.ERROR_MESSAGE);
                     }else {
                         Boolean saveToJsonResult = managerCanvas.saveToJson(savePath, server.getShapeDataList());
                         if (saveToJsonResult) {

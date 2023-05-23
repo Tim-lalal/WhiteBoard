@@ -1,5 +1,8 @@
 package manager;
 
+import client.Message;
+import com.google.gson.Gson;
+
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +10,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -136,14 +140,22 @@ public class Server {
     public void disconnectClient(String clientName) {
         // find the socket corresponding to the clientName
         Socket clientSocket = clientMap.get(clientName);
+        // Remove the clientName from the list of clients
+        loggedInClientListModel.removeElement(clientName);
+        OutputStream output = clientNameOutput.get(clientName);
+        Message message = new Message("KICKOUT","Kick Out Client " + clientName );
+        String messageJson = new Gson().toJson(message);
+        try {
+            output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        } catch (IOException e) {
+            System.out.println("Send Kick Out Action to client fail");
+        }
         try {
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Remove the clientName from the list of clients
-        loggedInClientListModel.removeElement(clientName);
-        OutputStream output = clientNameOutput.get(clientName);
         outputs.remove(output);
         InputStream input = clientNameInput.get(clientName);
         inputs.remove(input);

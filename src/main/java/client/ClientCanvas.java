@@ -72,9 +72,6 @@ public class ClientCanvas extends JPanel {
         return currentColor;
     }
 
-//    public ArrayList<ShapeData> getShapeDataList() {
-//        return shapeDataList;
-//    }
 
     public float getCurrentBrushWidth() {
         return currentBrushWidth;
@@ -117,22 +114,7 @@ public class ClientCanvas extends JPanel {
                 lastX = x;
                 lastY = y;
                 repaint();
-                if (errorCount > 1) {
-                    JDialog dialog = new JDialog();
-                    dialog.setModal(true);
-                    dialog.setTitle("Connection Error");
-                    dialog.setSize(400, 150);
-                    dialog.setLayout(new BorderLayout());
-
-                    JLabel messageLabel = new JLabel("Lose the connect to server, the client will shutdown", SwingConstants.CENTER);
-                    dialog.add(messageLabel, BorderLayout.CENTER);
-                    JButton closeButton = new JButton("Shutdown");
-                    closeButton.addActionListener(excep -> dialog.dispose());
-                    dialog.add(closeButton, BorderLayout.SOUTH);
-                    clientWindow.dispose();
-                    dialog.setLocationRelativeTo(null);  // Center the dialog
-                    dialog.setVisible(true);
-                }
+                connectionCheck(errorCount);
             }
         });
     }
@@ -158,22 +140,7 @@ public class ClientCanvas extends JPanel {
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
-                    if (errorCount > 1) {
-                        JDialog dialog = new JDialog();
-                        dialog.setModal(true);
-                        dialog.setTitle("Connection Error");
-                        dialog.setSize(400, 150);
-                        dialog.setLayout(new BorderLayout());
-
-                        JLabel messageLabel = new JLabel("Lose the connect to server, the client will shutdown", SwingConstants.CENTER);
-                        dialog.add(messageLabel, BorderLayout.CENTER);
-                        JButton closeButton = new JButton("Shutdown");
-                        closeButton.addActionListener(excep -> dialog.dispose());
-                        dialog.add(closeButton, BorderLayout.SOUTH);
-                        clientWindow.dispose();
-                        dialog.setLocationRelativeTo(null);  // Center the dialog
-                        dialog.setVisible(true);
-                    }
+                    connectionCheck(errorCount);
                 }
             }
         });
@@ -205,22 +172,7 @@ public class ClientCanvas extends JPanel {
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
-                    if (errorCount > 1) {
-                        JDialog dialog = new JDialog();
-                        dialog.setModal(true);
-                        dialog.setTitle("Connection Error");
-                        dialog.setSize(400, 150);
-                        dialog.setLayout(new BorderLayout());
-
-                        JLabel messageLabel = new JLabel("Lose the connect to server, the client will shutdown", SwingConstants.CENTER);
-                        dialog.add(messageLabel, BorderLayout.CENTER);
-                        JButton closeButton = new JButton("Shutdown");
-                        closeButton.addActionListener(excep -> dialog.dispose());
-                        dialog.add(closeButton, BorderLayout.SOUTH);
-                        clientWindow.dispose();
-                        dialog.setLocationRelativeTo(null);  // Center the dialog
-                        dialog.setVisible(true);
-                    }
+                    connectionCheck(errorCount);
 
                 }
             }
@@ -251,22 +203,7 @@ public class ClientCanvas extends JPanel {
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
-                    if (errorCount > 1) {
-                        JDialog dialog = new JDialog();
-                        dialog.setModal(true);
-                        dialog.setTitle("Connection Error");
-                        dialog.setSize(400, 150);
-                        dialog.setLayout(new BorderLayout());
-
-                        JLabel messageLabel = new JLabel("Lose the connect to server, the client will shutdown", SwingConstants.CENTER);
-                        dialog.add(messageLabel, BorderLayout.CENTER);
-                        JButton closeButton = new JButton("Shutdown");
-                        closeButton.addActionListener(excep -> dialog.dispose());
-                        dialog.add(closeButton, BorderLayout.SOUTH);
-                        clientWindow.dispose();
-                        dialog.setLocationRelativeTo(null);  // Center the dialog
-                        dialog.setVisible(true);
-                    }
+                    connectionCheck(errorCount);
                 }
             }
         });
@@ -312,39 +249,23 @@ public class ClientCanvas extends JPanel {
     }
 
 
-    protected Boolean saveToJson(String path, List<ShapeData> shapeDataList) {
-//        shapeDataList.add(shapeData); // 将新的shapeData添加到shapeDataList中
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonString = gson.toJson(shapeDataList);
+    private void connectionCheck(int errorCount){
+        if(errorCount > 1){
+            JDialog dialog = new JDialog();
+            dialog.setModal(true);
+            dialog.setTitle("Connection Error");
+            dialog.setSize(400, 150);
+            dialog.setLayout(new BorderLayout());
 
-        try (FileWriter fileWriter = new FileWriter(path)) {
-            fileWriter.write(jsonString);
-            return true;
-        } catch (IOException e) {
-            System.out.println("saving failed!");
-            return false;
+            JLabel messageLabel = new JLabel("Lose the connect to server, the client will shutdown", SwingConstants.CENTER);
+            dialog.add(messageLabel, BorderLayout.CENTER);
+            JButton closeButton = new JButton("Shutdown");
+            closeButton.addActionListener(excep -> dialog.dispose());
+            dialog.add(closeButton, BorderLayout.SOUTH);
+            clientWindow.dispose();
+            dialog.setLocationRelativeTo(null);  // Center the dialog
+            dialog.setVisible(true);
         }
-
-    }
-
-
-    public ArrayList<ShapeData> loadFromJson(String path) {
-        Gson gson = new Gson();
-        try (FileReader fileReader = new FileReader(path)) {
-            Type shapeDataListType = new TypeToken<ArrayList<ShapeData>>() {
-            }.getType();
-            ArrayList<ShapeData> importedShapes = gson.fromJson(fileReader, shapeDataListType);
-            return importedShapes;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    public void clearShapeDataList() {
-        shapeDataList.clear();
-        repaint();
     }
 
 

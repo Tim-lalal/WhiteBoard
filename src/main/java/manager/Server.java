@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -31,29 +32,37 @@ public class Server {
 
     private final DefaultListModel<String> loggedInClientListModel = new DefaultListModel<>();
 
-    private final ArrayList<Socket> sockets=new ArrayList<>();
+    private final ArrayList<Socket> sockets = new ArrayList<>();
 
-    private ArrayList<InputStream>inputs=new ArrayList<>();
-    private ArrayList<OutputStream>outputs=new ArrayList<>();
+    private ArrayList<InputStream> inputs = new ArrayList<>();
+    private ArrayList<OutputStream> outputs = new ArrayList<>();
 
     private static Server server;
 
+    static int port = 8888;
 
-    private List<TextData> textDataList = new CopyOnWriteArrayList<>();
-
+    static String ipAddress = "localhost";
     ManagerLoginWindow manager;
 
     public static void main(String[] args) {
+        if(args.length == 2){
+            ipAddress = args[0];
+            port = Integer.valueOf(args[1]);
+        }else{
+            System.out.println("Wrong input args, Set default ipaddress to localhost, and port 8888!");
+            ipAddress = "localhost";
+            port = 8888;
+        }
         server = new Server();
         server.create();
 
     }
 
-    public ArrayList<InputStream> getInputs(){
+    public ArrayList<InputStream> getInputs() {
         return inputs;
     }
 
-    public ConcurrentHashMap<String, Socket> getClientMap(){
+    public ConcurrentHashMap<String, Socket> getClientMap() {
         return clientMap;
     }
 
@@ -61,70 +70,112 @@ public class Server {
         return loggedInClientListModel;
     }
 
-    public ConcurrentHashMap<String, OutputStream> getClientNameOutput(){
+    public ConcurrentHashMap<String, OutputStream> getClientNameOutput() {
         return clientNameOutput;
     }
 
-    public ConcurrentHashMap<String, InputStream> getClientNameInput(){
+    public ConcurrentHashMap<String, InputStream> getClientNameInput() {
         return clientNameInput;
     }
 
     public void create() {
 
-        int port = 8888;
 
         ExecutorService clientExecutorService = Executors.newFixedThreadPool(10);
 
 
         // serverSocket using to receive requirement
-        ServerSocket serverSocket;
+        ServerSocket serverSocket = null;
 
 
         manager = new ManagerLoginWindow();
         manager.inputWindow(server);
 
         try {
-            serverSocket = new ServerSocket(port);
+            InetSocketAddress address = new InetSocketAddress(ipAddress,port);
+            serverSocket = new ServerSocket();
+            serverSocket.bind(address);
             System.out.println("Server is listening on port:" + port);
 //            monitorConnections();
-            while (true){
+            while (true) {
 
                 //receive the clientSocket
                 Socket clientSocket = serverSocket.accept();
                 //client socket connected and add it to the socket list
                 sockets.add(clientSocket);
                 //get the input output streams
-                InputStream input=clientSocket.getInputStream();
-                OutputStream output=clientSocket.getOutputStream();
+                InputStream input = clientSocket.getInputStream();
+                OutputStream output = clientSocket.getOutputStream();
                 inputs.add(input);
                 outputs.add(output);
 
                 // the only way of input from server
-                //server与client之间建立的一个channel，这个channel中有一个while循环监听来自于client的数据，并将这个数据发送给其他的clients
-                MessageChannel channel = new MessageChannel((sockets.size()), input,output, outputs, server, clientSocket);
-                System.out.println("Socket size: "+ sockets.size());
+                // Establish a channel between the server and the client, where a while loop is set up to listen for data from the client within this channel.
+                // The received data is then sent to other clients.
+                MessageChannel channel = new MessageChannel((sockets.size()), input, output, outputs, server, clientSocket);
+                System.out.println("Socket size: " + sockets.size());
                 clientExecutorService.execute(channel);
-
 
 
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("cannot assign request address: bind, change to ipaddress localhost and port 8888");
+            InetSocketAddress address = new InetSocketAddress("localhost",8888);
+            try {
+                serverSocket = new ServerSocket();
+                serverSocket.bind(address);
+                System.out.println("Server is listening on port:" + port);
+                //            monitorConnections();
+                while (true) {
+
+                    //receive the clientSocket
+                    Socket clientSocket = serverSocket.accept();
+                    //client socket connected and add it to the socket list
+                    sockets.add(clientSocket);
+                    //get the input output streams
+                    InputStream input = clientSocket.getInputStream();
+                    OutputStream output = clientSocket.getOutputStream();
+                    inputs.add(input);
+                    outputs.add(output);
+
+                    // the only way of input from server
+                    // Establish a channel between the server and the client, where a while loop is set up to listen for data from the client within this channel.
+                    // The received data is then sent to other clients.
+                    MessageChannel channel = new MessageChannel((sockets.size()), input, output, outputs, server, clientSocket);
+                    System.out.println("Socket size: " + sockets.size());
+                    clientExecutorService.execute(channel);
+
+
+                }
+
+
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+        }finally {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                try {
+                    serverSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
     }
 
-    public void addClientToMap(String clientName, Socket clientSocket){
+    public void addClientToMap(String clientName, Socket clientSocket) {
         clientMap.put(clientName, clientSocket);
     }
 
-    public void addClientOutput(String clientName, OutputStream output){
-        clientNameOutput.put(clientName,output);
+    public void addClientOutput(String clientName, OutputStream output) {
+        clientNameOutput.put(clientName, output);
     }
 
-    public void addClientInput(String clientName, InputStream input){
-        clientNameInput.put(clientName,input);
+    public void addClientInput(String clientName, InputStream input) {
+        clientNameInput.put(clientName, input);
     }
 
     public List<ShapeData> getShapeDataList() {
@@ -132,8 +183,7 @@ public class Server {
     }
 
 
-
-    public ArrayList<OutputStream> getOutputs(){
+    public ArrayList<OutputStream> getOutputs() {
         return outputs;
     }
 
@@ -143,7 +193,7 @@ public class Server {
         // Remove the clientName from the list of clients
         loggedInClientListModel.removeElement(clientName);
         OutputStream output = clientNameOutput.get(clientName);
-        Message message = new Message("KICKOUT","Kick Out Client " + clientName );
+        Message message = new Message("KICKOUT", "Kick Out Client " + clientName);
         String messageJson = new Gson().toJson(message);
         try {
             output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
@@ -163,15 +213,8 @@ public class Server {
 
     }
 
-    public void updateTextArea(String username, String text){
-        manager.getManagerWindow().getChatArea().append(username +": " + text + "\n");
+    public void updateTextArea(String username, String text) {
+        manager.getManagerWindow().getChatArea().append(username + ": " + text + "\n");
     }
 
-    public List<TextData> getTextDataList() {
-        return textDataList;
-    }
-
-    public void setTextDataList(List<TextData> textDataList) {
-        this.textDataList = textDataList;
-    }
 }

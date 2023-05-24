@@ -7,7 +7,7 @@ public class TextData implements Serializable {
 
     private String text;
 
-    public TextData(String name, String text){
+    public TextData(String name, String text) {
         this.name = name;
         this.text = text;
     }

@@ -1,8 +1,6 @@
 package client;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import manager.ShapeData;
 
 import javax.swing.*;
@@ -11,32 +9,24 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClientCanvas extends JPanel {
-    private ArrayList<Shape> shapes = new ArrayList<>();
     private List<ShapeData> shapeDataList;
     private int lastX, lastY;
-
     private String currentTool = "line";
     private Color currentColor = Color.BLACK;
-
     private float currentBrushWidth = 1.0f;
-
     private OutputStream output;
-
     private int errorCount = 0;
-
     private ClientWindow clientWindow;
 
 
+    //Constructor of generate the Client canvas
     public ClientCanvas(List<ShapeData> shapeDataList, OutputStream output, ClientWindow clientWindow) {
         this.output = output;
         this.shapeDataList = shapeDataList;
@@ -45,6 +35,7 @@ public class ClientCanvas extends JPanel {
         this.clientWindow = clientWindow;
     }
 
+    //set up tool for user
     public void setCurrentTool(String tool) {
         this.currentTool = tool;
         removeMouseListener();
@@ -93,6 +84,7 @@ public class ClientCanvas extends JPanel {
         }
     }
 
+    //draw line on canvas and send shapedata to server
     private void canvasLine() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -119,6 +111,7 @@ public class ClientCanvas extends JPanel {
         });
     }
 
+    //draw Circle on canvas and send shapedata to server
     private void canvasCircle() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -136,7 +129,7 @@ public class ClientCanvas extends JPanel {
                     int y = e.getY();
                     int radius = (int) Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
 //                    shapes.add(new Ellipse2D.Float(lastX - radius, lastY - radius, 2 * radius, 2 * radius));
-                    ShapeData shapeData =new ShapeData(getCurrentTool(), lastX, lastY, x, y, colorToString(getCurrentColor()), getCurrentBrushWidth());
+                    ShapeData shapeData = new ShapeData(getCurrentTool(), lastX, lastY, x, y, colorToString(getCurrentColor()), getCurrentBrushWidth());
                     shapeDataList.add(shapeData);
                     sendShapeDataToServer(shapeData);
                     repaint();
@@ -148,6 +141,7 @@ public class ClientCanvas extends JPanel {
     }
 
 
+    //draw Oval on canvas and send shapedata to server
     private void canvasOval() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -179,6 +173,7 @@ public class ClientCanvas extends JPanel {
         });
     }
 
+    //draw Rectangle on canvas and send shapedata to server
     private void canvasRectangle() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -210,7 +205,7 @@ public class ClientCanvas extends JPanel {
     }
 
 
-
+    //send shapedata to server
     private void sendShapeDataToServer(ShapeData shapeData) {
         String shapeDataJson = new Gson().toJson(shapeData);
         Message message = new Message("SHAPEDATA", shapeDataJson);
@@ -240,17 +235,20 @@ public class ClientCanvas extends JPanel {
 
     }
 
+    // transfer color object to string
     private String colorToString(Color color) {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
+    //transfer string to color object
     private Color stringToColor(String colorString) {
         return Color.decode(colorString);
     }
 
 
-    private void connectionCheck(int errorCount){
-        if(errorCount > 1){
+    //check connection to server
+    private void connectionCheck(int errorCount) {
+        if (errorCount > 1) {
             JDialog dialog = new JDialog();
             dialog.setModal(true);
             dialog.setTitle("Connection Error");

@@ -28,7 +28,6 @@ public class ManagerCanvas extends JPanel {
 
     private float currentBrushWidth = 1.0f;
 
-
     private Server server;
 
     // Add a reference to a MessageChannel
@@ -37,7 +36,7 @@ public class ManagerCanvas extends JPanel {
 
     public ManagerCanvas(Server server) {
         this.server = server;
-        messageChannel = new MessageChannel(0,null,null,server.getOutputs(),server,null);
+        messageChannel = new MessageChannel(0, null, null, server.getOutputs(), server, null);
         this.shapeDataList = server.getShapeDataList();
         setBackground(Color.white);
         setCurrentTool("line");
@@ -112,7 +111,7 @@ public class ManagerCanvas extends JPanel {
                 ShapeData shapeData = new ShapeData(getCurrentTool(), lastX, lastY, x, y, colorToString(getCurrentColor()), getCurrentBrushWidth());
                 shapeDataList.add(shapeData);
                 //set the server socketnumber = 0 and shareshape to clients
-                messageChannel.shareShape(shapeData,server.getOutputs(),"Socket0");
+                messageChannel.shareShape(shapeData, server.getOutputs(), "Socket0");
                 lastX = x;
                 lastY = y;
                 repaint();
@@ -140,7 +139,7 @@ public class ManagerCanvas extends JPanel {
                     ShapeData shapeData = new ShapeData(getCurrentTool(), lastX, lastY, x, y, colorToString(getCurrentColor()), getCurrentBrushWidth());
                     shapeDataList.add(shapeData);
                     //set the server socketnumber = 0 and shareshape to clients
-                    messageChannel.shareShape(shapeData,server.getOutputs(),"Socket0");
+                    messageChannel.shareShape(shapeData, server.getOutputs(), "Socket0");
                     repaint();
                 }
             }
@@ -172,7 +171,7 @@ public class ManagerCanvas extends JPanel {
                     ShapeData shapeData = new ShapeData(currentTool, startX, startY, width, height, colorToString(getCurrentColor()), getCurrentBrushWidth());
                     shapeDataList.add(shapeData);
                     //set the server socketnumber = 0 and shareshape to clients
-                    messageChannel.shareShape(shapeData,server.getOutputs(),"Socket0");
+                    messageChannel.shareShape(shapeData, server.getOutputs(), "Socket0");
                     repaint();
                 }
             }
@@ -202,7 +201,7 @@ public class ManagerCanvas extends JPanel {
                     ShapeData shapeData = new ShapeData(currentTool, startX, startY, width, height, colorToString(getCurrentColor()), getCurrentBrushWidth());
                     shapeDataList.add(shapeData);
                     //set the server socketnumber = 0 and shareshape to clients
-                    messageChannel.shareShape(shapeData,server.getOutputs(),"Socket0");
+                    messageChannel.shareShape(shapeData, server.getOutputs(), "Socket0");
                     repaint();
                 }
             }
@@ -265,7 +264,7 @@ public class ManagerCanvas extends JPanel {
 
     public void clearShapeDataList() {
         shapeDataList.clear();
-        messageChannel.clearCanvas("CLEAR","Clear all canvas!",server.getOutputs());
+        messageChannel.clearCanvas("CLEAR", "Clear all canvas!", server.getOutputs());
 //        repaint();
     }
 

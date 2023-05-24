@@ -81,7 +81,7 @@ public class ShapeData implements Serializable {
         this.brushWidth = brushWith;
     }
 
-    public Shape getShape(String tool){
+    public Shape getShape(String tool) {
         Shape shape = null;
         switch (tool) {
             case "line":
@@ -92,10 +92,10 @@ public class ShapeData implements Serializable {
                 shape = new Ellipse2D.Float(x1 - radius, y1 - radius, 2 * radius, 2 * radius);
                 break;
             case "oval":
-                shape = new Ellipse2D.Float(x1,y1,x2,y2);
+                shape = new Ellipse2D.Float(x1, y1, x2, y2);
                 break;
             case "rectangle":
-                shape = new Rectangle2D.Float(x1,y1,x2,y2);
+                shape = new Rectangle2D.Float(x1, y1, x2, y2);
                 break;
         }
         return shape;
@@ -106,12 +106,6 @@ public class ShapeData implements Serializable {
     public String toString() {
         return tool + "," + x1 + "," + y1 + "," + x2 + "," + y2 + "," + color + "," + brushWidth;
     }
-
-
-
-
-
-
 
 
 }

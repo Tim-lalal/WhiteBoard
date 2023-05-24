@@ -5,17 +5,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ManagerLoginWindow extends JFrame{
+public class ManagerLoginWindow extends JFrame {
 
     ManagerWindow managerWindow;
 
-    public ManagerLoginWindow(){
+    public ManagerLoginWindow() {
 
     }
-    public void inputWindow(Server server){
+
+    public void inputWindow(Server server) {
         init(server);
 
     }
+
     private void init(Server server) {
         setTitle("Welcome!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

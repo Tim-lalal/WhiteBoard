@@ -26,51 +26,38 @@ public class ClientWindow extends JFrame {
 
     private JTextArea chatArea;
 
-    public ClientWindow(String username, List<ShapeData> shapeDataList, OutputStream output, DefaultListModel<String> loggedInUsersListModel, Socket socket){
+    public ClientWindow(String username, List<ShapeData> shapeDataList, OutputStream output, DefaultListModel<String> loggedInUsersListModel, Socket socket) {
         this.output = output;
         setTitle("Welcome to the Canvas!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1300,800);
-        ClientCanvas clientCanvas = new ClientCanvas(shapeDataList,output,this);
-
+        setSize(1300, 800);
+        ClientCanvas clientCanvas = new ClientCanvas(shapeDataList, output, this);
         //the main canvas panel with BorderLayout for adjustment
         JPanel mainPanel = new JPanel(new BorderLayout());
-
-
         // The left panel, includes the current user list and manager's saving button.
         JPanel leftPanel = new JPanel(new BorderLayout());
         JLabel currentUserlistLabel = new JLabel("Current logged-in users:");
         leftPanel.add(currentUserlistLabel, BorderLayout.NORTH);
-
         JList<String> loggedInUsersList = new JList<>(loggedInUsersListModel);
         //add the loggedinuserlist to the scrollpane
         JScrollPane loggedInUsersScrollPane = new JScrollPane(loggedInUsersList);
         leftPanel.add(loggedInUsersScrollPane, BorderLayout.CENTER);
-
-
         mainPanel.add(leftPanel, BorderLayout.WEST);
-
-
-
         // Create the chatPanel
         JPanel chatPanel = new JPanel();
         chatPanel.setLayout(new BorderLayout());
         chatPanel.setPreferredSize(new Dimension(300, 600)); // Set the preferred size to manage the width of the chat panel
-
         // Display Area
         chatArea = new JTextArea();
         chatArea.setEditable(false); // Make it so the user cannot edit the display area
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
         chatPanel.add(chatScrollPane, BorderLayout.CENTER);
-
         // Create a new panel to hold the user input area and the send button
         JPanel southPanel = new JPanel();
         southPanel.setLayout(new BorderLayout());
-
         // User Input Area
         JTextField chatField = new JTextField();
         southPanel.add(chatField, BorderLayout.CENTER);
-
         // Send Button
         JButton sendButton = new JButton("Send");
         sendButton.addActionListener(new ActionListener() {
@@ -93,25 +80,18 @@ public class ClientWindow extends JFrame {
         // Create a new JPanel to hold both the canvas and the chatPanel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BorderLayout()); // Set the layout to BorderLayout
-
         centerPanel.add(clientCanvas, BorderLayout.CENTER);
         centerPanel.add(chatPanel, BorderLayout.EAST);
-
         // Add the centerPanel to the mainPanel
         mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-
-
         // Right Panel with user info, tools, and logout button
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setPreferredSize(new Dimension(120, rightPanel.getPreferredSize().height));
-
         // Greet user
         JLabel currentUserLabel = new JLabel("Hello: " + username);
         Font labelFont = new Font("Arial", Font.BOLD, 12); // Change the font type, style, and size
         currentUserLabel.setFont(labelFont);
         rightPanel.add(currentUserLabel, BorderLayout.NORTH);
-
         // Drawing tools Panel
         JPanel drawingToolsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -186,12 +166,11 @@ public class ClientWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Color newColor = JColorChooser.showDialog(null, "Color Selection", clientCanvas.getCurrentColor());
-                if(newColor != null){
+                if (newColor != null) {
                     clientCanvas.setCurrentColor(newColor);
                 }
             }
         });
-
 
         brushWidthButton.addActionListener(new ActionListener() {
             @Override
@@ -246,9 +225,6 @@ public class ClientWindow extends JFrame {
         setVisible(true);
 
 
-
-
-
     }
 
 
@@ -263,11 +239,11 @@ public class ClientWindow extends JFrame {
         }
     }
 
-    public void addTextToTextArea(String text){
+    public void addTextToTextArea(String text) {
         chatArea.append(text);
     }
 
-    public void sendTextToServer(OutputStream output, String username, String text){
+    public void sendTextToServer(OutputStream output, String username, String text) {
         TextData textData = new TextData(username, text);
         String textDataJson = new Gson().toJson(textData);
         Message message = new Message("TEXTDATA", textDataJson);

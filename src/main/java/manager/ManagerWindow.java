@@ -19,12 +19,15 @@ import java.util.ArrayList;
 public class ManagerWindow extends JFrame {
     JTextArea chatArea;
 
-    public ManagerWindow(){};
+    public ManagerWindow() {
+    }
 
-    public ManagerWindow(String username, Server server){
+    ;
+
+    public ManagerWindow(String username, Server server) {
         setTitle("Welcome to the Canvas!");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1300,800);
+        setSize(1300, 800);
         ManagerCanvas managerCanvas = new ManagerCanvas(server);
 
         //the main canvas panel with BorderLayout for adjustment
@@ -79,9 +82,9 @@ public class ManagerWindow extends JFrame {
                 if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToSave = fileChooser.getSelectedFile();
                     String savePath = fileToSave.getAbsolutePath();
-                    if(!savePath.toLowerCase().endsWith(".json")){
-                        JOptionPane.showMessageDialog(null,"Wrong file format to saving shapes, end with '.json'","Saving",JOptionPane.ERROR_MESSAGE);
-                    }else {
+                    if (!savePath.toLowerCase().endsWith(".json")) {
+                        JOptionPane.showMessageDialog(null, "Wrong file format to saving shapes, end with '.json'", "Saving", JOptionPane.ERROR_MESSAGE);
+                    } else {
                         Boolean saveToJsonResult = managerCanvas.saveToJson(savePath, server.getShapeDataList());
                         if (saveToJsonResult) {
                             JOptionPane.showMessageDialog(null, "Saving Successful！", "Saving", JOptionPane.INFORMATION_MESSAGE);
@@ -99,24 +102,24 @@ public class ManagerWindow extends JFrame {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("Please specify a file to import the shapes!");
                 int userSelection = fileChooser.showSaveDialog(null);
-                if (userSelection == JFileChooser.APPROVE_OPTION){
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
                     File fileToImport = fileChooser.getSelectedFile();
                     String importPath = fileToImport.getAbsolutePath();
-                    try{
+                    try {
                         ArrayList<ShapeData> importedShapes = managerCanvas.loadFromJson(importPath);
-                        if (importedShapes == null){
-                            JOptionPane.showMessageDialog(null, "This file is empty!","failure", JOptionPane.INFORMATION_MESSAGE);
-                        }else{
+                        if (importedShapes == null) {
+                            JOptionPane.showMessageDialog(null, "This file is empty!", "failure", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
                             server.getShapeDataList().clear();
                             server.getShapeDataList().addAll(importedShapes);
                             repaint();
                             MessageChannel messageChannel = new MessageChannel();
-                            for(ShapeData shapeData : server.getShapeDataList()){
-                                messageChannel.shareShape(shapeData,server.getOutputs(), username);
+                            for (ShapeData shapeData : server.getShapeDataList()) {
+                                messageChannel.shareShape(shapeData, server.getOutputs(), username);
                             }
                         }
-                    }catch (Exception exception){
-                        JOptionPane.showMessageDialog(null, "Import Failed!","failure", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (Exception exception) {
+                        JOptionPane.showMessageDialog(null, "Import Failed!", "failure", JOptionPane.INFORMATION_MESSAGE);
                     }
 
                 }
@@ -149,7 +152,7 @@ public class ManagerWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String message = chatField.getText();
                 if (!message.isEmpty()) {
-                    chatArea.append(username +": " + message + "\n"); // append the message to the chat area with a newline
+                    chatArea.append(username + ": " + message + "\n"); // append the message to the chat area with a newline
                     sendTextToAll(server.getOutputs(), username, message);
                     chatField.setText(""); // Clear the input field
                 }
@@ -169,11 +172,6 @@ public class ManagerWindow extends JFrame {
 
         // Add the centerPanel to the mainPanel
         mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-
-
-
-
 
 
         // Right Panel with user info, tools, and logout button
@@ -260,7 +258,7 @@ public class ManagerWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Color newColor = JColorChooser.showDialog(null, "Color Selection", managerCanvas.getCurrentColor());
-                if(newColor != null){
+                if (newColor != null) {
                     managerCanvas.setCurrentColor(newColor);
                 }
             }
@@ -278,12 +276,12 @@ public class ManagerWindow extends JFrame {
 
                 JSlider brushWidthSlider = new JSlider(JSlider.HORIZONTAL, 1, 20, (int) managerCanvas.getCurrentBrushWidth());
                 JLabel brushWidthLabel = new JLabel("Brush Width: " + brushWidthSlider.getValue());
-                    brushWidthSlider.addChangeListener(new ChangeListener() {
-                        @Override
-                        public void stateChanged(ChangeEvent e) {
-                            brushWidthLabel.setText("Brush Width: " + brushWidthSlider.getValue());
-                        }
-                    });
+                brushWidthSlider.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        brushWidthLabel.setText("Brush Width: " + brushWidthSlider.getValue());
+                    }
+                });
                 brushWidthDialog.add(brushWidthSlider, BorderLayout.NORTH);
                 brushWidthDialog.add(brushWidthLabel, BorderLayout.CENTER);
                 JButton okButton = new JButton("OK");
@@ -317,13 +315,13 @@ public class ManagerWindow extends JFrame {
         loggedInUsersList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount() == 2){
+                if (e.getClickCount() == 2) {
                     int selectedIndex = loggedInUsersList.locationToIndex(e.getPoint());
-                    if (selectedIndex != -1){
+                    if (selectedIndex != -1) {
                         String selecteduser = loggedInClientListModel.getElementAt(selectedIndex);
-                        if (!selecteduser.equals(username)){
+                        if (!selecteduser.equals(username)) {
                             int result = JOptionPane.showConfirmDialog(null, "Are your sure to kick out user: " + selecteduser + "?", "Kick out user", JOptionPane.YES_NO_OPTION);
-                            if (result == JOptionPane.YES_OPTION){
+                            if (result == JOptionPane.YES_OPTION) {
                                 //Kick out the user
                                 server.disconnectClient(selecteduser);
 
@@ -336,15 +334,13 @@ public class ManagerWindow extends JFrame {
         });
 
 
-
-
     }
 
-    public void sendTextToAll(ArrayList<OutputStream> outputs, String username, String text){
+    public void sendTextToAll(ArrayList<OutputStream> outputs, String username, String text) {
         TextData textData = new TextData(username, text);
         String textDataJson = new Gson().toJson(textData);
-        for(OutputStream output : outputs){
-            Message message = new Message("TEXTDATA",textDataJson);
+        for (OutputStream output : outputs) {
+            Message message = new Message("TEXTDATA", textDataJson);
             String messageJson = new Gson().toJson(message);
             try {
                 output.write((messageJson + "\n").getBytes(StandardCharsets.UTF_8));
